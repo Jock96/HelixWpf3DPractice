@@ -38,6 +38,11 @@
         public ShowLightsDirectionCommand ShowLightsDirectionCommand { get; set; }
 
         /// <summary>
+        /// Команда задаёт случайный материал поверхности на сцене.
+        /// </summary>
+        public RandomMaterialCommand RandomMaterialCommand { get; set; }
+
+        /// <summary>
         /// Вью-модель главного окна.
         /// </summary>
         /// <param name="helixViewport3D">Адаптация среды 3D инструменртами HelixToolkit.</param>
@@ -50,6 +55,7 @@
             CreateRandomGridByPlane();
 
             ShowLightsDirectionCommand = new ShowLightsDirectionCommand();
+            RandomMaterialCommand = new RandomMaterialCommand();
         }
 
         /// <summary>
@@ -72,7 +78,7 @@
             var modelGroup = new Model3DGroup();
             var meshBuilder = new MeshBuilder(false, false);
 
-            CreteTerrain(gridMatrix, meshBuilder);
+            CreateTerrain(gridMatrix, meshBuilder);
 
             var mesh = meshBuilder.ToMesh(true);
             var redMaterial = MaterialHelper.CreateMaterial(Colors.Red);
@@ -85,14 +91,6 @@
             });
 
             Model = modelGroup;
-
-            ////(Model as Model3DGroup).Children;
-
-            ////var randomMaterial = MaterialHelper.CreateMaterial(
-            ////    Color.FromRgb(
-            ////    (byte)random.Next(byte.MinValue, byte.MaxValue),
-            ////    (byte)random.Next(byte.MinValue, byte.MaxValue),
-            ////    (byte)random.Next(byte.MinValue, byte.MaxValue)));
         }
 
         /// <summary>
@@ -100,7 +98,7 @@
         /// </summary>
         /// <param name="gridMatrix">Сетка точек для расположения высот.</param>
         /// <param name="meshBuilder">Инструмент для работы с геометрией.</param>
-        private static void CreteTerrain(int[,] gridMatrix, MeshBuilder meshBuilder)
+        private static void CreateTerrain(int[,] gridMatrix, MeshBuilder meshBuilder)
         {
             var halfOfWidth = _basePlaneWidth / 2;
             var halfOfLength = _basePlaneLength / 2;

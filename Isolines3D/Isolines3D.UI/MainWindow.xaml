@@ -13,7 +13,8 @@
     <Grid>
         <Grid Panel.ZIndex="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="0.05*"/>
+                <RowDefinition Height="0.1*"/>
+                <RowDefinition Height="0.1*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -21,13 +22,21 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Button Opacity="0.25" Command="{Binding ShowLightsDirectionCommand}" 
-                    CommandParameter="{Binding}">
+                    CommandParameter="{Binding}" Grid.Row="0">
                 <TextBlock>
                     Показать/убрать
                     <LineBreak/>
                     направление света.
                 </TextBlock>
                 </Button>
+            <Button Opacity="0.25" Command="{Binding RandomMaterialCommand}" 
+                    CommandParameter="{Binding}" Grid.Row="1">
+                <TextBlock>
+                    Задать случайный
+                    <LineBreak/>
+                    материал.
+                </TextBlock>
+            </Button>
         </Grid>
         <helixToolkit:HelixViewport3D x:Name="mainView" Background="Black"
                                       ZoomExtentsWhenLoaded="True">
