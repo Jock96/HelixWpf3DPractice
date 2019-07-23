@@ -7,6 +7,8 @@
     using Isolines3D.UI.Commands;
     using System.Drawing;
     using Isolines3D.UI.Properties;
+    using System.Windows;
+    using System.Windows.Media.Imaging;
 
     /// <summary>
     /// Вью-модель главного окна.
@@ -42,6 +44,11 @@
         public RandomMaterialCommand RandomMaterialCommand { get; set; }
 
         /// <summary>
+        /// Команда выбора карты для генерации поверхности.
+        /// </summary>
+        public ChooseMapCommand ChooseMapCommand { get; set; }
+
+        /// <summary>
         /// Вью-модель главного окна.
         /// </summary>
         /// <param name="helixViewport3D">Адаптация среды 3D инструменртами HelixToolkit.</param>
@@ -50,13 +57,30 @@
             _helixViewport3D = helixViewport3D;
             InitializeViewPort3D();
 
+            var bitmapSource = new Bitmap(Resources.VerteciesMap);
+            SetImageSource(bitmapSource);
+
             helixViewport3D.Loaded += ViewportInitializeHandle;
 
             ////CreateRandomGridByPlane();
-            CreateGridByPlaneByImage();
+            CreateGridByPlaneByImage(bitmapSource);
 
             ShowLightsDirectionCommand = new ShowLightsDirectionCommand();
             RandomMaterialCommand = new RandomMaterialCommand();
+            ChooseMapCommand = new ChooseMapCommand();
+        }
+
+        /// <summary>
+        /// Задаёт ресурс изображению.
+        /// </summary>
+        /// <param name="bitmapSource">Изображение полученное через <see cref="Bitmap"/>.</param>
+        public void SetImageSource(Bitmap bitmapSource)
+        {
+            _imageSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                                     bitmapSource.GetHbitmap(),
+                                     IntPtr.Zero,
+                                     Int32Rect.Empty,
+                                     BitmapSizeOptions.FromEmptyOptions());
         }
 
         /// <summary>
@@ -96,9 +120,9 @@
         /// <summary>
         /// Создаёт поверхность по изображению.
         /// </summary>
-        private void CreateGridByPlaneByImage()
+        public void CreateGridByPlaneByImage(Bitmap bitmap)
         {
-            var colorMap = LoadVerticiesMap();
+            var colorMap = LoadVerticiesMap(bitmap);
             var gridMatrix = new int[_basePlaneWidth + 1, _basePlaneLength + 1];
 
             for (var indexX = 0; indexX < _basePlaneWidth; ++indexX)
@@ -124,42 +148,57 @@
                 BackMaterial = material
             });
 
-            Model = modelGroup;
+            _model = modelGroup;
+        }
+
+        /// <summary>
+        /// Изображение карты.
+        /// </summary>
+        private ImageSource _imageSource;
+
+        /// <summary>
+        /// Изображение карты.
+        /// </summary>
+        public ImageSource ImageSource
+        {
+            get => _imageSource;
+            set
+            {
+                _imageSource = value;
+                OnPropertyChanged();
+            }
         }
 
         /// <summary>
         /// Загружаем цифровую карту цветов.
         /// </summary>
         /// <returns>Карту цветов обработанного изображения изолиний.</returns>
-        private System.Windows.Media.Color[,] LoadVerticiesMap()
+        private System.Windows.Media.Color[,] LoadVerticiesMap(Bitmap bitmap)
         {
             var colorMap = new System.Windows.Media.Color[_basePlaneWidth + 1, _basePlaneLength + 1];
 
-            using (var bitmap = new Bitmap(Resources.MapOfVerticies))
+            if (bitmap.Width != _basePlaneWidth ||
+                bitmap.Height != _basePlaneLength)
             {
-                if (bitmap.Width != _basePlaneWidth || 
-                    bitmap.Height != _basePlaneLength)
+                var image = bitmap;
+                var newSize = new System.Drawing.Size(_basePlaneWidth + 1, _basePlaneLength + 1);
+
+                // Поворот для корректного преобразования в битовую карту и модель.
+                image.RotateFlip(RotateFlipType.Rotate180FlipX);
+
+                using (var resizedBitmap = new Bitmap(image, newSize))
                 {
-                    var image = Resources.MapOfVerticies;
-                    var newSize = new System.Drawing.Size(_basePlaneWidth + 1, _basePlaneLength + 1);
-
-                    // Поворот для корректного преобразования в битовую карту и модель.
-                    image.RotateFlip(RotateFlipType.Rotate180FlipX);
-
-                    using (var resizedBitmap = new Bitmap(image, newSize))
+                    for (var indexX = 0; indexX < resizedBitmap.Width; ++indexX)
                     {
-                        for (var indexX = 0; indexX < resizedBitmap.Width; ++indexX)
+                        for (var indexY = 0; indexY < resizedBitmap.Height; ++indexY)
                         {
-                            for (var indexY = 0; indexY < resizedBitmap.Height; ++indexY)
-                            {
-                                var currentPixel = resizedBitmap.GetPixel(indexX, indexY);
+                            var currentPixel = resizedBitmap.GetPixel(indexX, indexY);
 
-                                var color = System.Windows.Media.Color.
-                                    FromArgb(currentPixel.A, currentPixel.R,
-                                    currentPixel.G, currentPixel.B);
+                            var color = System.Windows.Media.Color.
+                                FromArgb(currentPixel.A, currentPixel.R,
+                                currentPixel.G, currentPixel.B);
 
-                                colorMap[indexX, indexY] = color;
-                            }
+                            colorMap[indexX, indexY] = color;
                         }
                     }
                 }
@@ -281,7 +320,20 @@
         /// <summary>
         /// 3D-модель.
         /// </summary>
-        public Model3D Model { get; set; }
+        private Model3D _model;
+
+        /// <summary>
+        /// 3D-модель.
+        /// </summary>
+        public Model3D Model
+        {
+            get => _model;
+            set
+            {
+                _model = value;
+                OnPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// Модель базовго плана.
