@@ -4,10 +4,9 @@
     using System.Windows.Media;
     using System.Windows.Media.Media3D;
     using System;
-    using System.Collections.Generic;
-    using System.Windows;
-    using System.Linq;
     using Isolines3D.UI.Commands;
+    using System.Drawing;
+    using Isolines3D.UI.Properties;
 
     /// <summary>
     /// Вью-модель главного окна.
@@ -52,7 +51,9 @@
             InitializeViewPort3D();
 
             helixViewport3D.Loaded += ViewportInitializeHandle;
-            CreateRandomGridByPlane();
+
+            ////CreateRandomGridByPlane();
+            CreateGridByPlaneByImage();
 
             ShowLightsDirectionCommand = new ShowLightsDirectionCommand();
             RandomMaterialCommand = new RandomMaterialCommand();
@@ -64,7 +65,6 @@
         private void CreateRandomGridByPlane()
         {
             var gridMatrix = new int[_basePlaneWidth + 1, _basePlaneLength + 1];
-
             var random = new Random();
 
             for (var indexX = 0; indexX < _basePlaneWidth; ++indexX)
@@ -94,11 +94,87 @@
         }
 
         /// <summary>
+        /// Создаёт поверхность по изображению.
+        /// </summary>
+        private void CreateGridByPlaneByImage()
+        {
+            var colorMap = LoadVerticiesMap();
+            var gridMatrix = new int[_basePlaneWidth + 1, _basePlaneLength + 1];
+
+            for (var indexX = 0; indexX < _basePlaneWidth; ++indexX)
+            {
+                for (var indexY = 0; indexY < _basePlaneLength; ++indexY)
+                {
+                    gridMatrix[indexX, indexY] = colorMap[indexX, indexY].R;
+                }
+            }
+
+            var modelGroup = new Model3DGroup();
+            var meshBuilder = new MeshBuilder(false, false);
+
+            CreateTerrain(gridMatrix, meshBuilder, 0.1);
+
+            var mesh = meshBuilder.ToMesh(true);
+            var material = MaterialHelper.CreateMaterial(Colors.Green);
+
+            modelGroup.Children.Add(new GeometryModel3D
+            {
+                Geometry = mesh,
+                Material = material,
+                BackMaterial = material
+            });
+
+            Model = modelGroup;
+        }
+
+        /// <summary>
+        /// Загружаем цифровую карту цветов.
+        /// </summary>
+        /// <returns>Карту цветов обработанного изображения изолиний.</returns>
+        private System.Windows.Media.Color[,] LoadVerticiesMap()
+        {
+            var colorMap = new System.Windows.Media.Color[_basePlaneWidth + 1, _basePlaneLength + 1];
+
+            using (var bitmap = new Bitmap(Resources.MapOfVerticies))
+            {
+                if (bitmap.Width != _basePlaneWidth || 
+                    bitmap.Height != _basePlaneLength)
+                {
+                    var image = Resources.MapOfVerticies;
+                    var newSize = new System.Drawing.Size(_basePlaneWidth + 1, _basePlaneLength + 1);
+
+                    // Поворот для корректного преобразования в битовую карту и модель.
+                    image.RotateFlip(RotateFlipType.Rotate180FlipX);
+
+                    using (var resizedBitmap = new Bitmap(image, newSize))
+                    {
+                        for (var indexX = 0; indexX < resizedBitmap.Width; ++indexX)
+                        {
+                            for (var indexY = 0; indexY < resizedBitmap.Height; ++indexY)
+                            {
+                                var currentPixel = resizedBitmap.GetPixel(indexX, indexY);
+
+                                var color = System.Windows.Media.Color.
+                                    FromArgb(currentPixel.A, currentPixel.R,
+                                    currentPixel.G, currentPixel.B);
+
+                                colorMap[indexX, indexY] = color;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return colorMap;
+        }
+
+        /// <summary>
         /// Создание поверхности с перепадами.
         /// </summary>
         /// <param name="gridMatrix">Сетка точек для расположения высот.</param>
         /// <param name="meshBuilder">Инструмент для работы с геометрией.</param>
-        private static void CreateTerrain(int[,] gridMatrix, MeshBuilder meshBuilder)
+        /// <param name="smoothingFactor">Сглаживание для конвертацииипостроения геометрии.</param>
+        private static void CreateTerrain(int[,] gridMatrix, MeshBuilder meshBuilder, double smoothingFactor = 1)
         {
             var halfOfWidth = _basePlaneWidth / 2;
             var halfOfLength = _basePlaneLength / 2;
@@ -110,9 +186,9 @@
                     try
                     {
                         meshBuilder.AddTriangle(
-                        new Point3D(indexX, indexY, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength]),
-                        new Point3D(indexX + 1, indexY, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength]),
-                        new Point3D(indexX, indexY + 1, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1]));
+                        new Point3D(indexX, indexY, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength] * smoothingFactor),
+                        new Point3D(indexX + 1, indexY, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength] * smoothingFactor),
+                        new Point3D(indexX, indexY + 1, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1] * smoothingFactor));
                     }
                     catch
                     {
@@ -122,9 +198,9 @@
                     try
                     {
                         meshBuilder.AddTriangle(
-                            new Point3D(indexX + 1, indexY, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength]),
-                            new Point3D(indexX, indexY + 1, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1]),
-                            new Point3D(indexX + 1, indexY + 1, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength + 1]));
+                            new Point3D(indexX + 1, indexY, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength] * smoothingFactor),
+                            new Point3D(indexX, indexY + 1, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1] * smoothingFactor),
+                            new Point3D(indexX + 1, indexY + 1, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength + 1] * smoothingFactor));
                     }
                     catch
                     {
@@ -182,14 +258,14 @@
         /// </summary>
         /// <remarks>Размеры имеют тип <see cref="int"/>
         /// для удобства составления сетки с геометрией.</remarks>
-        private static int _basePlaneLength = 20;
+        private static int _basePlaneLength = 199;
 
         /// <summary>
         /// Ширина базового плана.
         /// </summary>
         /// <remarks>Размеры имеют тип <see cref="int"/>
         /// для удобства составления сетки с геометрией.</remarks>
-        private static int _basePlaneWidth = 20;
+        private static int _basePlaneWidth = 199;
 
         /// <summary>
         /// Модель базовго плана.
