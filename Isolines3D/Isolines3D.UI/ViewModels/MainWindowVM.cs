@@ -9,6 +9,8 @@
     using Isolines3D.UI.Properties;
     using System.Windows;
     using System.Windows.Media.Imaging;
+    using Isolines3D.UI.Extensions;
+    using Isolines3D.UI.Utils;
 
     /// <summary>
     /// Вью-модель главного окна.
@@ -49,6 +51,11 @@
         public ChooseMapCommand ChooseMapCommand { get; set; }
 
         /// <summary>
+        /// ПОле для обращения к нструменту создания 3D модели.
+        /// </summary>
+        public readonly ModelCreatorUtil ModelCreatorUtil;
+
+        /// <summary>
         /// Вью-модель главного окна.
         /// </summary>
         /// <param name="helixViewport3D">Адаптация среды 3D инструменртами HelixToolkit.</param>
@@ -58,97 +65,16 @@
             InitializeViewPort3D();
 
             var bitmapSource = new Bitmap(Resources.VerteciesMap);
-            SetImageSource(bitmapSource);
+            _imageSource = bitmapSource.ConvertToImageSource();
 
-            helixViewport3D.Loaded += ViewportInitializeHandle;
-
-            ////CreateRandomGridByPlane();
-            CreateGridByPlaneByImage(bitmapSource);
+            ModelCreatorUtil = new ModelCreatorUtil(_basePlaneWidth, _basePlaneLength);
+            Model = ModelCreatorUtil.CreateModelByImage(bitmapSource);
 
             ShowLightsDirectionCommand = new ShowLightsDirectionCommand();
             RandomMaterialCommand = new RandomMaterialCommand();
             ChooseMapCommand = new ChooseMapCommand();
-        }
 
-        /// <summary>
-        /// Задаёт ресурс изображению.
-        /// </summary>
-        /// <param name="bitmapSource">Изображение полученное через <see cref="Bitmap"/>.</param>
-        public void SetImageSource(Bitmap bitmapSource)
-        {
-            _imageSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                                     bitmapSource.GetHbitmap(),
-                                     IntPtr.Zero,
-                                     Int32Rect.Empty,
-                                     BitmapSizeOptions.FromEmptyOptions());
-        }
-
-        /// <summary>
-        /// Создание виртуальной сетки с рандомными значениями для изолиний.
-        /// </summary>
-        private void CreateRandomGridByPlane()
-        {
-            var gridMatrix = new int[_basePlaneWidth + 1, _basePlaneLength + 1];
-            var random = new Random();
-
-            for (var indexX = 0; indexX < _basePlaneWidth; ++indexX)
-            {
-                for (var indexY = 0; indexY < _basePlaneLength; ++indexY)
-                {
-                    gridMatrix[indexX, indexY] = random.Next(2, 10);
-                }
-            }
-
-            var modelGroup = new Model3DGroup();
-            var meshBuilder = new MeshBuilder(false, false);
-
-            CreateTerrain(gridMatrix, meshBuilder);
-
-            var mesh = meshBuilder.ToMesh(true);
-            var redMaterial = MaterialHelper.CreateMaterial(Colors.Red);
-
-            modelGroup.Children.Add(new GeometryModel3D
-            {
-                Geometry = mesh,
-                Material = redMaterial,
-                BackMaterial = redMaterial
-            });
-
-            Model = modelGroup;
-        }
-
-        /// <summary>
-        /// Создаёт поверхность по изображению.
-        /// </summary>
-        public void CreateGridByPlaneByImage(Bitmap bitmap)
-        {
-            var colorMap = LoadVerticiesMap(bitmap);
-            var gridMatrix = new int[_basePlaneWidth + 1, _basePlaneLength + 1];
-
-            for (var indexX = 0; indexX < _basePlaneWidth; ++indexX)
-            {
-                for (var indexY = 0; indexY < _basePlaneLength; ++indexY)
-                {
-                    gridMatrix[indexX, indexY] = colorMap[indexX, indexY].R;
-                }
-            }
-
-            var modelGroup = new Model3DGroup();
-            var meshBuilder = new MeshBuilder(false, false);
-
-            CreateTerrain(gridMatrix, meshBuilder, 0.1);
-
-            var mesh = meshBuilder.ToMesh(true);
-            var material = MaterialHelper.CreateMaterial(Colors.Green);
-
-            modelGroup.Children.Add(new GeometryModel3D
-            {
-                Geometry = mesh,
-                Material = material,
-                BackMaterial = material
-            });
-
-            _model = modelGroup;
+            helixViewport3D.Loaded += ViewportInitializeHandle;
         }
 
         /// <summary>
@@ -170,86 +96,6 @@
         }
 
         /// <summary>
-        /// Загружаем цифровую карту цветов.
-        /// </summary>
-        /// <returns>Карту цветов обработанного изображения изолиний.</returns>
-        private System.Windows.Media.Color[,] LoadVerticiesMap(Bitmap bitmap)
-        {
-            var colorMap = new System.Windows.Media.Color[_basePlaneWidth + 1, _basePlaneLength + 1];
-
-            if (bitmap.Width != _basePlaneWidth ||
-                bitmap.Height != _basePlaneLength)
-            {
-                var image = bitmap;
-                var newSize = new System.Drawing.Size(_basePlaneWidth + 1, _basePlaneLength + 1);
-
-                // Поворот для корректного преобразования в битовую карту и модель.
-                image.RotateFlip(RotateFlipType.Rotate180FlipX);
-
-                using (var resizedBitmap = new Bitmap(image, newSize))
-                {
-                    for (var indexX = 0; indexX < resizedBitmap.Width; ++indexX)
-                    {
-                        for (var indexY = 0; indexY < resizedBitmap.Height; ++indexY)
-                        {
-                            var currentPixel = resizedBitmap.GetPixel(indexX, indexY);
-
-                            var color = System.Windows.Media.Color.
-                                FromArgb(currentPixel.A, currentPixel.R,
-                                currentPixel.G, currentPixel.B);
-
-                            colorMap[indexX, indexY] = color;
-                        }
-                    }
-                }
-            }
-
-            return colorMap;
-        }
-
-        /// <summary>
-        /// Создание поверхности с перепадами.
-        /// </summary>
-        /// <param name="gridMatrix">Сетка точек для расположения высот.</param>
-        /// <param name="meshBuilder">Инструмент для работы с геометрией.</param>
-        /// <param name="smoothingFactor">Сглаживание для конвертацииипостроения геометрии.</param>
-        private static void CreateTerrain(int[,] gridMatrix, MeshBuilder meshBuilder, double smoothingFactor = 1)
-        {
-            var halfOfWidth = _basePlaneWidth / 2;
-            var halfOfLength = _basePlaneLength / 2;
-
-            for (var indexX = -halfOfWidth; indexX <= halfOfWidth; ++indexX)
-            {
-                for (var indexY = -halfOfLength; indexY <= halfOfLength; ++indexY)
-                {
-                    try
-                    {
-                        meshBuilder.AddTriangle(
-                        new Point3D(indexX, indexY, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength] * smoothingFactor),
-                        new Point3D(indexX + 1, indexY, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength] * smoothingFactor),
-                        new Point3D(indexX, indexY + 1, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1] * smoothingFactor));
-                    }
-                    catch
-                    {
-                        // Ignore.
-                    }
-
-                    try
-                    {
-                        meshBuilder.AddTriangle(
-                            new Point3D(indexX + 1, indexY, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength] * smoothingFactor),
-                            new Point3D(indexX, indexY + 1, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1] * smoothingFactor),
-                            new Point3D(indexX + 1, indexY + 1, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength + 1] * smoothingFactor));
-                    }
-                    catch
-                    {
-                        // Ignore.
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// События при инициализации 3D сцены.
         /// </summary>
         /// <param name="sender">Объект отправитель.</param>
@@ -257,13 +103,13 @@
         private void ViewportInitializeHandle(object sender, EventArgs e)
         {
             var newUpDirection = _helixViewport3D.Camera.UpDirection;
-            var animationTime = 2000d;
+            var animationTime = 3500d;
             var newDirection = new Vector3D();
 
-            newDirection = new Vector3D(0, 1, -0.5);
+            newDirection = new Vector3D(1, 0, -0.5);
             _helixViewport3D.Camera.ChangeDirection(newDirection, newUpDirection, animationTime);
 
-            newDirection = new Vector3D(-1, 0, -0.5); 
+            newDirection = new Vector3D(0, 1, -0.5); 
             _helixViewport3D.Camera.ChangeDirection(newDirection, newUpDirection, animationTime);
         }
 

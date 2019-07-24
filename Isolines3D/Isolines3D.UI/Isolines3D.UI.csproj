@@ -65,6 +65,8 @@
     <Compile Include="Commands\ChooseMapCommand.cs" />
     <Compile Include="Commands\RandomMaterialCommand.cs" />
     <Compile Include="Commands\ShowLightsDirectionCommand.cs" />
+    <Compile Include="Extensions\BitmapExtensions.cs" />
+    <Compile Include="Utils\ModelCreatorUtil.cs" />
     <Compile Include="ViewModels\BaseVM.cs" />
     <Compile Include="ViewModels\MainWindowVM.cs" />
     <Page Include="MainWindow.xaml">

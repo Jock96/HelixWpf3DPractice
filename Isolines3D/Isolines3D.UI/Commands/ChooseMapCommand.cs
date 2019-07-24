@@ -1,10 +1,15 @@
 ﻿namespace Isolines3D.UI.Commands
 {
+    using Isolines3D.UI.Extensions;
     using Isolines3D.UI.Properties;
+    using Isolines3D.UI.Utils;
     using Isolines3D.UI.ViewModels;
     using Microsoft.Win32;
+    using System;
     using System.Drawing;
     using System.IO;
+    using System.Windows;
+    using System.Windows.Media.Media3D;
 
     /// <summary>
     /// Команда выбора карты для генерации поверхности.
@@ -17,22 +22,30 @@
         /// <param name="mainWindowVM">Вью-модель главного окна.</param>
         protected override void Execute(MainWindowVM mainWindowVM)
         {
-            var fileDialog = new OpenFileDialog();
-
-            fileDialog.Filter = @"(*.bmp)|*.bmp";
-            fileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+            var fileDialog = new OpenFileDialog
+            {
+                Filter = @"(*.bmp)|*.bmp",
+                InitialDirectory = Directory.GetCurrentDirectory()
+            };
 
             var file = fileDialog.ShowDialog();
 
-            if (!file.HasValue)
+            if (!file.HasValue || string.Equals(string.Empty, fileDialog.FileName))
                 return;
 
-            using (var fileStream = fileDialog.OpenFile())
-            using (var bitmap = new Bitmap(fileStream))
+            try
             {
-                mainWindowVM.SetImageSource(bitmap);
-
-                mainWindowVM.CreateGridByPlaneByImage(bitmap);
+                using (var fileStream = fileDialog.OpenFile())
+                using (var bitmap = new Bitmap(fileStream))
+                {
+                    mainWindowVM.ImageSource = bitmap.ConvertToImageSource();
+                    mainWindowVM.Model = mainWindowVM.ModelCreatorUtil.CreateModelByImage(bitmap);
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"Не удалось импортировать файл!" +
+                    $"\nОшибка: {exception.ToString()}");
             }
         }
     }
