@@ -1,6 +1,7 @@
 ﻿namespace Isolines3D.UI.Commands
 {
     using Isolines3D.UI.Extensions;
+    using Isolines3D.UI.Helpers;
     using Isolines3D.UI.Properties;
     using Isolines3D.UI.Utils;
     using Isolines3D.UI.ViewModels;
@@ -25,7 +26,7 @@
             var fileDialog = new OpenFileDialog
             {
                 Filter = @"(*.bmp)|*.bmp",
-                InitialDirectory = Directory.GetCurrentDirectory()
+                InitialDirectory = PathHelper.GetResourcesPath()
             };
 
             var file = fileDialog.ShowDialog();

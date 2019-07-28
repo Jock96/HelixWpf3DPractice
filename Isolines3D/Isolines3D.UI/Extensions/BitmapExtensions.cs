@@ -23,5 +23,46 @@
                 IntPtr.Zero,
                 Int32Rect.Empty,
                 BitmapSizeOptions.FromEmptyOptions());
+
+        /// <summary>
+        /// Попытка установить цвет пикселя на данное расположение в Bitmap. 
+        /// При неудаче не устанавливает пиксель.
+        /// </summary>
+        /// <param name="bitmapSource">Изображение полученное через <see cref="Bitmap"/>.</param>
+        /// <param name="xPoint">Позиция по ширине.</param>
+        /// <param name="yPoint">Позиция по высоте.</param>
+        /// <param name="color">Цвет устанавливаемого пикселя.</param>
+        public static void TrySetPixel(this Bitmap bitmapSource, int xPoint, int yPoint, System.Drawing.Color color)
+        {
+            try
+            {
+                bitmapSource.SetPixel(xPoint, yPoint, color);
+            }
+            catch
+            {
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Проверяет существует ли пиксель по указанному индексу.
+        /// </summary>
+        /// <param name="bitmapSource">Изображение полученное через <see cref="Bitmap"/>.</param>
+        /// <param name="xPoint">Позиция по ширине.</param>
+        /// <param name="yPoint">Позиция по высоте.</param>
+        /// <returns>Возвращает флаг существования пикселя.</returns>
+        public static bool IsPixelExist(this Bitmap bitmapSource, int xPoint, int yPoint)
+        {
+            try
+            {
+                var pixel = bitmapSource.GetPixel(xPoint, yPoint);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

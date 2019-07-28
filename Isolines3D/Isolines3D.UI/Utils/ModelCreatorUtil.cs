@@ -112,8 +112,9 @@
         /// Создаёт 3D модель по изображению.
         /// </summary>
         /// <param name="bitmap">Изображение.</param>
+        /// <param name="smoothingFactor">Сглаживание модели.</param>
         /// <returns>Возвращает 3D модель.</returns>
-        public Model3DGroup CreateModelByImage(Bitmap bitmap)
+        public Model3DGroup CreateModelByImage(Bitmap bitmap, double smoothingFactor = 0)
         {
             var colorMap = ImageToColorMap(bitmap);
             var gridMatrix = new int[_modelWidth + 1, _modelLenght + 1];
@@ -129,7 +130,10 @@
             var modelGroup = new Model3DGroup();
             var meshBuilder = new MeshBuilder(false, false);
 
-            CreateTerrain(gridMatrix, meshBuilder, 0.1);
+            if (smoothingFactor == 0)
+                CreateTerrain(gridMatrix, meshBuilder, 0.1);
+            else
+                CreateTerrain(gridMatrix, meshBuilder, smoothingFactor);
 
             var mesh = meshBuilder.ToMesh(true);
             var material = MaterialHelper.CreateMaterial(Colors.Green);

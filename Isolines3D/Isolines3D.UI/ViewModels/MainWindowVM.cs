@@ -51,9 +51,14 @@
         public ChooseMapCommand ChooseMapCommand { get; set; }
 
         /// <summary>
-        /// ПОле для обращения к нструменту создания 3D модели.
+        /// Поле для обращения к нструменту создания 3D модели.
         /// </summary>
         public readonly ModelCreatorUtil ModelCreatorUtil;
+
+        /// <summary>
+        /// Команда формирования модели по изолиниям.
+        /// </summary>
+        public CreateByIsolinesCommand CreateByIsolinesCommand { get; set; }
 
         /// <summary>
         /// Вью-модель главного окна.
@@ -72,7 +77,9 @@
 
             ShowLightsDirectionCommand = new ShowLightsDirectionCommand();
             RandomMaterialCommand = new RandomMaterialCommand();
+
             ChooseMapCommand = new ChooseMapCommand();
+            CreateByIsolinesCommand = new CreateByIsolinesCommand();
 
             helixViewport3D.Loaded += ViewportInitializeHandle;
         }
