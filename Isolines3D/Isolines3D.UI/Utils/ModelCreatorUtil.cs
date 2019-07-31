@@ -87,6 +87,7 @@
                 }
             }
 
+            return;
             // Убрать, если будет виснуть.
             meshBuilder.CreateNormals = true;
 
@@ -235,6 +236,10 @@
 
                             var color = System.Windows.Media.Color.FromArgb(0,0,0,0);
 
+                            if (currentPixel.R == 0 &&
+                                currentPixel.G == 0 &&
+                                currentPixel.B == 0)
+                                continue;
                             // Изображение залито в белом фоне цветом с содержанием R
                             // равным: 255, 254, 253 и т.д.
 
