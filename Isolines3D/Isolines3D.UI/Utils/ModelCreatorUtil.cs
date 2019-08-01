@@ -157,63 +157,56 @@
             try
             {
                 if (gridMatrix[firstIndex + 1, secondIndex] == 1)
-                    points.Add(new Point3D(firstIndex + 1 - halfOfWidth, secondIndex - halfOfLength, 1));
+                    points.Add(new Point3D(firstIndex + 1, secondIndex, 1));
             }
             catch { }
 
             try
             {
                 if (gridMatrix[firstIndex + 1, secondIndex + 1] == 1)
-                    points.Add(new Point3D(firstIndex + 1 - halfOfWidth, secondIndex + 1 - halfOfLength, 1));
+                    points.Add(new Point3D(firstIndex + 1, secondIndex + 1, 1));
             }
             catch { }
 
             try
             {
                 if (gridMatrix[firstIndex, secondIndex + 1] == 1)
-                    points.Add(new Point3D(firstIndex - halfOfWidth, secondIndex + 1 - halfOfLength, 1));
+                    points.Add(new Point3D(firstIndex, secondIndex + 1, 1));
             }
             catch { }
 
             try
             {
                 if (gridMatrix[firstIndex - 1, secondIndex + 1] == 1)
-                    points.Add(new Point3D(firstIndex - 1 - halfOfWidth, secondIndex + 1 - halfOfLength, 1));
-            }
-            catch { }
-
-            try
-            {
-                if (gridMatrix[firstIndex - 1, secondIndex - 1] == 1)
-                    points.Add(new Point3D(firstIndex - 1 - halfOfWidth, secondIndex - 1 - halfOfLength, 1));
+                    points.Add(new Point3D(firstIndex - 1, secondIndex + 1, 1));
             }
             catch { }
 
             try
             {
                 if (gridMatrix[firstIndex - 1, secondIndex] == 1)
-                    points.Add(new Point3D(firstIndex - 1 - halfOfWidth, secondIndex - halfOfLength, 1));
+                    points.Add(new Point3D(firstIndex - 1, secondIndex, 1));
             }
             catch { }
 
             try
             {
                 if (gridMatrix[firstIndex - 1, secondIndex - 1] == 1)
-                    points.Add(new Point3D(firstIndex - 1 - halfOfWidth, secondIndex - 1 - halfOfLength, 1));
+                    points.Add(new Point3D(firstIndex - 1, secondIndex - 1, 1));
             }
             catch { }
 
             try
             {
                 if (gridMatrix[firstIndex, secondIndex - 1] == 1)
-                    points.Add(new Point3D(firstIndex - halfOfWidth, secondIndex - 1 - halfOfLength, 1));
+                    points.Add(new Point3D(firstIndex, secondIndex - 1, 1));
             }
             catch { }
 
             try
             {
                 if (gridMatrix[firstIndex + 1, secondIndex - 1] == 1)
-                    points.Add(new Point3D(firstIndex + 1 - halfOfWidth, secondIndex - 1 - halfOfLength, 1));
+                    points.Add(new Point3D(firstIndex + 1, secondIndex - 1, 1));
             }
             catch { }
 
@@ -233,7 +226,7 @@
             var halfOfWidth = _modelWidth / 2;
             var halfOfLength = _modelLenght / 2;
 
-            var pointsDictionaryByCoords = new Dictionary<int, int>();
+            var pointsByCoords = new List<Point3D>();
 
             for (var indexX = -halfOfWidth; indexX <= halfOfWidth; ++indexX)
             {
@@ -242,39 +235,145 @@
                     var currentPoint = gridMatrix[indexX + halfOfWidth, indexY + halfOfLength];
 
                     if (currentPoint == 1)
-                        pointsDictionaryByCoords.Add(indexX + halfOfWidth, indexY + halfOfLength);
+                        pointsByCoords.Add(new Point3D(indexX, indexY, 1));
 
                     continue;
-
-                    var nextPoints = FindNearestPoint(gridMatrix, indexX + halfOfWidth, indexY + halfOfLength, halfOfWidth, halfOfLength);
-
-                    if (!nextPoints.Any())
-                        continue;
-
-                    foreach (var nextPoint in nextPoints)
-                    {
-                        meshBuilder.AddPipe(new Point3D(indexX, indexY, 1), nextPoint, 0, 2, 15);
-                    }
                 }
             }
 
-            var pointsOfLine = new List<Point3D>();
-            var firstPoint = new Point3D(pointsDictionaryByCoords.Keys.First() - halfOfWidth,
-                pointsDictionaryByCoords.Values.First()- halfOfLength, 1);
+            //foreach (var test in pointsByCoords)
+            //{
+            //    meshBuilder.AddSphere(test, 2, 5, 5);
+            //}
 
-            pointsOfLine.Add(firstPoint);
+            //var mesh1 = meshBuilder.ToMesh(true);
+            //var material1 = MaterialHelper.CreateMaterial(Colors.Green);
 
-            var mesh = meshBuilder.ToMesh(true);
-            var material = MaterialHelper.CreateMaterial(Colors.Green);
+            //modelGroup.Children.Add(new GeometryModel3D
+            //{
+            //    Geometry = mesh1,
+            //    Material = material1,
+            //    BackMaterial = material1
+            //});
 
-            modelGroup.Children.Add(new GeometryModel3D
+            //return modelGroup;
+
+            do
             {
-                Geometry = mesh,
-                Material = material,
-                BackMaterial = material
-            });
+                var firstPoint = new Point3D(pointsByCoords.First().X,
+                    pointsByCoords.First().Y, 1);
+
+                var startPoint = new Point3D(pointsByCoords.First().X,
+                    pointsByCoords.First().Y, 1);
+
+                var pointsOfLine = new List<Point3D>
+                {
+                    firstPoint
+                };
+
+                while (true)
+                {
+                    var gridPoints = FindNearestPoint(gridMatrix, (int)firstPoint.X + halfOfWidth,
+                        (int)firstPoint.Y + halfOfLength, halfOfWidth, halfOfLength);
+
+                    var realPoints = new List<Point3D>();
+
+                    foreach (var point in gridPoints)
+                        realPoints.Add(new Point3D(point.X - halfOfWidth,
+                            point.Y - halfOfLength, 1));
+
+                    if (realPoints.All(element => pointsOfLine.Contains(element)))
+                    {
+                        // Попытка выйти из loop.
+
+                        var listOfNearestPoints = new List<Point3D>();
+
+                        foreach (var realPoint in realPoints)
+                        {
+                            var nearestPoints = FindNearestPoint(gridMatrix, (int)realPoint.X + halfOfWidth,
+                                (int)realPoint.Y + halfOfLength, halfOfWidth, halfOfLength);
+
+                            foreach (var point in nearestPoints)
+                                listOfNearestPoints.Add(new Point3D(point.X - halfOfWidth,
+                                    point.Y - halfOfLength, 1));
+                        }
+
+                        listOfNearestPoints = listOfNearestPoints.Distinct().ToList();
+
+                        if (!listOfNearestPoints.Contains(startPoint))
+                        {
+                            firstPoint = listOfNearestPoints.Find(point => !pointsOfLine.Contains(point));
+                            continue;
+                        }
+
+                        CreateIsolinesByPoints(modelGroup, meshBuilder, pointsByCoords, pointsOfLine);
+
+                        break;
+                    }
+                    else
+                    {
+                        foreach (var nextPoint in realPoints)
+                        {
+                            if (!pointsOfLine.Contains(nextPoint))
+                                pointsOfLine.Add(nextPoint);
+                        }
+
+                        firstPoint = pointsOfLine.Last();
+                    }
+                }
+            }
+            while (pointsByCoords.Any());
 
             return modelGroup;
+        }
+
+        /// <summary>
+        /// Создание изолиний по точкам.
+        /// </summary>
+        /// <param name="modelGroup">Группа модели.</param>
+        /// <param name="meshBuilder">Инструмент создания геометрии.</param>
+        /// <param name="pointsByCoords">Точки по матрице.</param>
+        /// <param name="pointsOfLine">Точки полилинии.</param>
+        private static void CreateIsolinesByPoints(Model3DGroup modelGroup, MeshBuilder meshBuilder, List<Point3D> pointsByCoords, List<Point3D> pointsOfLine)
+        {
+            // создаём линию и очищаем словарь.
+
+            foreach (var point in pointsOfLine)
+            {
+                var indexOfNext = pointsOfLine.IndexOf(point) + 1;
+
+                try
+                {
+                    meshBuilder.AddPipe(point, pointsOfLine[indexOfNext], 0, 2, 15);
+                }
+                catch
+                {
+                    meshBuilder.AddPipe(point, pointsOfLine.First(), 0, 2, 15);
+                }
+            }
+
+            var y = new List<Point3D>();
+
+            foreach (var x in pointsOfLine)
+            {
+                y.Add(new Point3D(x.X - 1, x.Y - 1, 1));
+            }
+
+            var intersect = pointsByCoords.Intersect(pointsOfLine).ToList();
+
+            if (intersect.Any())
+            {
+                pointsByCoords.RemoveAll(point => intersect.Contains(point));
+                var mesh = meshBuilder.ToMesh(true);
+                var material = MaterialHelper.CreateMaterial(Colors.Green);
+
+                modelGroup.Children.Add(new GeometryModel3D
+                {
+                    Geometry = mesh,
+                    Material = material,
+                    BackMaterial = material
+                });
+            }
         }
 
         /// <summary>
