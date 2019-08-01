@@ -76,7 +76,25 @@
                     gridMatrix[indexX, indexY] = pointMap[indexX, indexY];
             }
 
-            return BuildIsolines(gridMatrix);
+            var modelGroup = BuildIsolines(gridMatrix);
+
+            //var transform = new TranslateTransform3D
+            //{
+            //    OffsetZ = 5
+            //};
+
+            //modelGroup.Children[0].Transform = transform;
+
+            //transform.OffsetZ = 7;
+            //modelGroup.Children[1].Transform = transform;
+
+            //transform.OffsetZ = 15;
+            //modelGroup.Children[2].Transform = transform;
+
+            //transform.OffsetZ = 12;
+            //modelGroup.Children[3].Transform = transform;
+
+            return modelGroup;
         }
 
         /// <summary>
@@ -241,22 +259,7 @@
                 }
             }
 
-            //foreach (var test in pointsByCoords)
-            //{
-            //    meshBuilder.AddSphere(test, 2, 5, 5);
-            //}
-
-            //var mesh1 = meshBuilder.ToMesh(true);
-            //var material1 = MaterialHelper.CreateMaterial(Colors.Green);
-
-            //modelGroup.Children.Add(new GeometryModel3D
-            //{
-            //    Geometry = mesh1,
-            //    Material = material1,
-            //    BackMaterial = material1
-            //});
-
-            //return modelGroup;
+            var zCoordinate = 2;
 
             do
             {
@@ -306,7 +309,8 @@
                             continue;
                         }
 
-                        CreateIsolinesByPoints(modelGroup, meshBuilder, pointsByCoords, pointsOfLine);
+                        CreateIsolinesByPoints(modelGroup, meshBuilder, pointsByCoords, pointsOfLine, zCoordinate);
+                        zCoordinate += 5;
 
                         break;
                     }
@@ -334,7 +338,9 @@
         /// <param name="meshBuilder">Инструмент создания геометрии.</param>
         /// <param name="pointsByCoords">Точки по матрице.</param>
         /// <param name="pointsOfLine">Точки полилинии.</param>
-        private static void CreateIsolinesByPoints(Model3DGroup modelGroup, MeshBuilder meshBuilder, List<Point3D> pointsByCoords, List<Point3D> pointsOfLine)
+        /// <param name="zCoordinate">Координата высоты.</param>
+        private static void CreateIsolinesByPoints(Model3DGroup modelGroup, MeshBuilder meshBuilder,
+            List<Point3D> pointsByCoords, List<Point3D> pointsOfLine, double zCoordinate)
         {
             // создаём линию и очищаем словарь.
 
@@ -342,13 +348,22 @@
             {
                 var indexOfNext = pointsOfLine.IndexOf(point) + 1;
 
+                var firstPoint = new Point3D(point.X, point.Y, zCoordinate);
+                var secondPoint = new Point3D();
+
                 try
                 {
-                    meshBuilder.AddPipe(point, pointsOfLine[indexOfNext], 0, 2, 15);
+                    secondPoint = new Point3D(pointsOfLine[indexOfNext].X, pointsOfLine[indexOfNext].Y, zCoordinate);
                 }
                 catch
                 {
-                    meshBuilder.AddPipe(point, pointsOfLine.First(), 0, 2, 15);
+                    secondPoint = new Point3D(pointsOfLine.First().X, pointsOfLine.First().Y, zCoordinate);
+                }
+                finally
+                {
+                    meshBuilder.AddPipe(firstPoint, secondPoint, 0, 0.5, 10);
+                    //meshBuilder.AddSphere(firstPoint, 1, 10, 10);
+                    //meshBuilder.AddSphere(firstPoint, 1, 5, 5);
                 }
             }
 
