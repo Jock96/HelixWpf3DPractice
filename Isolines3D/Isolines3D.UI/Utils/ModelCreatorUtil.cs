@@ -1,11 +1,15 @@
 ﻿namespace Isolines3D.UI.Utils
 {
-    using HelixToolkit.Wpf;
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Linq;
     using System.Windows.Media;
     using System.Windows.Media.Media3D;
+
+    using HelixToolkit.Wpf;
+
+    using Color = System.Windows.Media.Color;
 
     /// <summary>
     /// Инструмент создание 3D модели.
@@ -13,14 +17,14 @@
     public class ModelCreatorUtil
     {
         /// <summary>
-        /// Ширина модели.
-        /// </summary>
-        private static int _modelWidth;
-
-        /// <summary>
         /// Длинна модели.
         /// </summary>
         private static int _modelLenght;
+
+        /// <summary>
+        /// Ширина модели.
+        /// </summary>
+        private static int _modelWidth;
 
         /// <summary>
         /// Инструмент создание 3D модели.
@@ -34,65 +38,45 @@
         }
 
         /// <summary>
-        /// Создание поверхности.
+        /// Создаёт 3D модель по изображению.
         /// </summary>
-        /// <param name="gridMatrix">Сетка точек для расположения высот.</param>
-        /// <param name="meshBuilder">Инструмент для работы с геометрией.</param>
-        /// <param name="smoothingFactor">Сглаживание для конвертацииипостроения геометрии.</param>
-        private static void CreateTerrain(int[,] gridMatrix, MeshBuilder meshBuilder, double smoothingFactor = 1)
+        /// <param name="bitmap">Изображение.</param>
+        /// <param name="smoothingFactor">Сглаживание модели.</param>
+        /// <returns>Возвращает 3D модель.</returns>
+        public Model3DGroup CreateModelByImage(Bitmap bitmap, double smoothingFactor = 0)
         {
-            var halfOfWidth = _modelWidth / 2;
-            var halfOfLength = _modelLenght / 2;
+            var colorMap = ImageToColorMap(bitmap);
+            var gridMatrix = new int[_modelWidth + 1, _modelLenght + 1];
 
-            //var pointsList = new List<List<Point3D>>();
-            var pointsArray = new List<Point3D>();
-
-            for (var indexX = -halfOfWidth; indexX <= halfOfWidth; ++indexX)
+            for (var indexX = 0; indexX < _modelWidth; ++indexX)
             {
-                for (var indexY = -halfOfLength; indexY <= halfOfLength; ++indexY)
-                {
-                    try
-                    {
-                        var pointOne = new Point3D(indexX, indexY, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength] * smoothingFactor);
-                        var pointTwo = new Point3D(indexX + 1, indexY, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength] * smoothingFactor);
-                        var pointThree = new Point3D(indexX, indexY + 1, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1] * smoothingFactor);
-
-                        meshBuilder.AddTriangle(pointOne, pointTwo, pointThree);
-
-                        pointsArray.Add(pointOne);
-                        pointsArray.Add(pointTwo);
-                        pointsArray.Add(pointThree);
-                    }
-                    catch
-                    {
-                        // Ignore.
-                    }
-
-                    try
-                    {
-                        var pointFour = new Point3D(indexX + 1, indexY, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength] * smoothingFactor);
-                        var pointFive = new Point3D(indexX, indexY + 1, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1] * smoothingFactor);
-                        var pointSix = new Point3D(indexX + 1, indexY + 1, gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength + 1] * smoothingFactor);
-
-                        meshBuilder.AddTriangle(pointFour, pointFive, pointSix);
-
-                        pointsArray.Add(pointFour);
-                        pointsArray.Add(pointFive);
-                        pointsArray.Add(pointSix);
-                    }
-                    catch
-                    {
-                        // Ignore.
-                    }
-                }
+                for (var indexY = 0; indexY < _modelLenght; ++indexY)
+                    gridMatrix[indexX, indexY] = colorMap[indexX, indexY].R;
             }
 
-            return;
-            // Убрать, если будет виснуть.
-            meshBuilder.CreateNormals = true;
+            return BuildModel(smoothingFactor, gridMatrix);
+        }
 
-            foreach (var point in pointsArray)
-                meshBuilder.AddBox(point, 1, 1, 1);
+        /// <summary>
+        /// Создание модели по изолиниям.
+        /// </summary>
+        /// <param name="bitmap">Изображение.</param>
+        /// <param name="smoothingFactor">Сглаживание модели.</param>
+        /// <returns>Возвращает 3D модель.</returns>
+        public Model3DGroup CreateModelByIsolines(Bitmap bitmap, double smoothingFactor = 0)
+        {
+            // Переделать.
+
+            var pointMap = PointMapFromIsolines(bitmap);
+            var gridMatrix = new int[_modelWidth + 1, _modelLenght + 1];
+
+            for (var indexX = 0; indexX < _modelWidth; ++indexX)
+            {
+                for (var indexY = 0; indexY < _modelLenght; ++indexY)
+                    gridMatrix[indexX, indexY] = pointMap[indexX, indexY];
+            }
+
+            return BuildIsolines(gridMatrix);
         }
 
         /// <summary>
@@ -105,10 +89,7 @@
 
             for (var indexX = 0; indexX < _modelWidth; ++indexX)
             {
-                for (var indexY = 0; indexY < _modelLenght; ++indexY)
-                {
-                    gridMatrix[indexX, indexY] = random.Next(2, 10);
-                }
+                for (var indexY = 0; indexY < _modelLenght; ++indexY) gridMatrix[indexX, indexY] = random.Next(2, 10);
             }
 
             var modelGroup = new Model3DGroup();
@@ -127,51 +108,6 @@
             });
 
             return modelGroup;
-        }
-
-        /// <summary>
-        /// Создание модели по изолиниям.
-        /// </summary>
-        /// <param name="bitmap">Изображение.</param>
-        /// <param name="smoothingFactor">Сглаживание модели.</param>
-        /// <returns>Возвращает 3D модель.</returns>
-        public Model3DGroup CreateModelByIsolines(Bitmap bitmap, double smoothingFactor = 0)
-        {
-            var colorMap = ColorMapFromIsolines(bitmap);
-
-            var gridMatrix = new int[_modelWidth + 1, _modelLenght + 1];
-
-            for (var indexX = 0; indexX < _modelWidth; ++indexX)
-            {
-                for (var indexY = 0; indexY < _modelLenght; ++indexY)
-                {
-                    gridMatrix[indexX, indexY] = colorMap[indexX, indexY].R;
-                }
-            }
-
-            return BuildModel(smoothingFactor, gridMatrix);
-        }
-
-        /// <summary>
-        /// Создаёт 3D модель по изображению.
-        /// </summary>
-        /// <param name="bitmap">Изображение.</param>
-        /// <param name="smoothingFactor">Сглаживание модели.</param>
-        /// <returns>Возвращает 3D модель.</returns>
-        public Model3DGroup CreateModelByImage(Bitmap bitmap, double smoothingFactor = 0)
-        {
-            var colorMap = ImageToColorMap(bitmap);
-            var gridMatrix = new int[_modelWidth + 1, _modelLenght + 1];
-
-            for (var indexX = 0; indexX < _modelWidth; ++indexX)
-            {
-                for (var indexY = 0; indexY < _modelLenght; ++indexY)
-                {
-                    gridMatrix[indexX, indexY] = colorMap[indexX, indexY].R;
-                }
-            }
-
-            return BuildModel(smoothingFactor, gridMatrix);
         }
 
         /// <summary>
@@ -206,6 +142,142 @@
         }
 
         /// <summary>
+        /// Находит ближайшие точки со значениями.
+        /// </summary>
+        /// <param name="gridMatrix">Матрица точек.</param>
+        /// <param name="firstIndex">Индекс первый.</param>
+        /// <param name="secondIndex">Индекс второй.</param>
+        /// <returns>Возвращает список ближайших точек со значениями.</returns>
+        private static List<Point3D> FindNearestPoint(int[,] gridMatrix, int firstIndex, int secondIndex, int halfOfWidth, int halfOfLength)
+        {
+            var points = new List<Point3D>();
+
+            // Обход по часовой стрелке начаная с 00 : 00.
+
+            try
+            {
+                if (gridMatrix[firstIndex + 1, secondIndex] == 1)
+                    points.Add(new Point3D(firstIndex + 1 - halfOfWidth, secondIndex - halfOfLength, 1));
+            }
+            catch { }
+
+            try
+            {
+                if (gridMatrix[firstIndex + 1, secondIndex + 1] == 1)
+                    points.Add(new Point3D(firstIndex + 1 - halfOfWidth, secondIndex + 1 - halfOfLength, 1));
+            }
+            catch { }
+
+            try
+            {
+                if (gridMatrix[firstIndex, secondIndex + 1] == 1)
+                    points.Add(new Point3D(firstIndex - halfOfWidth, secondIndex + 1 - halfOfLength, 1));
+            }
+            catch { }
+
+            try
+            {
+                if (gridMatrix[firstIndex - 1, secondIndex + 1] == 1)
+                    points.Add(new Point3D(firstIndex - 1 - halfOfWidth, secondIndex + 1 - halfOfLength, 1));
+            }
+            catch { }
+
+            try
+            {
+                if (gridMatrix[firstIndex - 1, secondIndex - 1] == 1)
+                    points.Add(new Point3D(firstIndex - 1 - halfOfWidth, secondIndex - 1 - halfOfLength, 1));
+            }
+            catch { }
+
+            try
+            {
+                if (gridMatrix[firstIndex - 1, secondIndex] == 1)
+                    points.Add(new Point3D(firstIndex - 1 - halfOfWidth, secondIndex - halfOfLength, 1));
+            }
+            catch { }
+
+            try
+            {
+                if (gridMatrix[firstIndex - 1, secondIndex - 1] == 1)
+                    points.Add(new Point3D(firstIndex - 1 - halfOfWidth, secondIndex - 1 - halfOfLength, 1));
+            }
+            catch { }
+
+            try
+            {
+                if (gridMatrix[firstIndex, secondIndex - 1] == 1)
+                    points.Add(new Point3D(firstIndex - halfOfWidth, secondIndex - 1 - halfOfLength, 1));
+            }
+            catch { }
+
+            try
+            {
+                if (gridMatrix[firstIndex + 1, secondIndex - 1] == 1)
+                    points.Add(new Point3D(firstIndex + 1 - halfOfWidth, secondIndex - 1 - halfOfLength, 1));
+            }
+            catch { }
+
+            return points;
+        }
+
+        /// <summary>
+        /// Создать линию по сетке точек.
+        /// </summary>
+        /// <param name="gridMatrix">Сетка точек.</param>
+        /// <returns>Возвращает построенную модель.</returns>
+        private static Model3DGroup BuildIsolines(int[,] gridMatrix)
+        {
+            var modelGroup = new Model3DGroup();
+            var meshBuilder = new MeshBuilder(false, false) { CreateNormals = true };
+
+            var halfOfWidth = _modelWidth / 2;
+            var halfOfLength = _modelLenght / 2;
+
+            var pointsDictionaryByCoords = new Dictionary<int, int>();
+
+            for (var indexX = -halfOfWidth; indexX <= halfOfWidth; ++indexX)
+            {
+                for (var indexY = -halfOfLength; indexY <= halfOfLength; ++indexY)
+                {
+                    var currentPoint = gridMatrix[indexX + halfOfWidth, indexY + halfOfLength];
+
+                    if (currentPoint == 1)
+                        pointsDictionaryByCoords.Add(indexX + halfOfWidth, indexY + halfOfLength);
+
+                    continue;
+
+                    var nextPoints = FindNearestPoint(gridMatrix, indexX + halfOfWidth, indexY + halfOfLength, halfOfWidth, halfOfLength);
+
+                    if (!nextPoints.Any())
+                        continue;
+
+                    foreach (var nextPoint in nextPoints)
+                    {
+                        meshBuilder.AddPipe(new Point3D(indexX, indexY, 1), nextPoint, 0, 2, 15);
+                    }
+                }
+            }
+
+            var pointsOfLine = new List<Point3D>();
+            var firstPoint = new Point3D(pointsDictionaryByCoords.Keys.First() - halfOfWidth,
+                pointsDictionaryByCoords.Values.First()- halfOfLength, 1);
+
+            pointsOfLine.Add(firstPoint);
+
+            var mesh = meshBuilder.ToMesh(true);
+            var material = MaterialHelper.CreateMaterial(Colors.Green);
+
+            modelGroup.Children.Add(new GeometryModel3D
+            {
+                Geometry = mesh,
+                Material = material,
+                BackMaterial = material
+            });
+
+            return modelGroup;
+        }
+
+        /// <summary>
         /// Формирование карты по изолиниям.
         /// </summary>
         /// <remarks>
@@ -213,88 +285,152 @@
         /// </remarks>
         /// <param name="bitmap">Изображение.</param>
         /// <returns>Возвращает карту цветов для преобразования в модель.</returns>
-        private System.Windows.Media.Color[,] ColorMapFromIsolines(Bitmap bitmap)
+        private int[,] PointMapFromIsolines(Bitmap bitmap)
         {
-            var colorMap = new System.Windows.Media.Color[_modelWidth + 1, _modelLenght + 1];
+            var pointMap = new int[_modelWidth + 1, _modelLenght + 1];
+            var image = bitmap;
+
+            var newSize = new Size(0, 0);
 
             if (bitmap.Width != _modelWidth ||
                 bitmap.Height != _modelLenght)
             {
-                var image = bitmap;
-                var newSize = new System.Drawing.Size(_modelWidth + 1, _modelLenght + 1);
+                newSize = new Size(_modelWidth + 1, _modelLenght + 1);
+            }
+            else
+            {
+                newSize = bitmap.Size;
+            }
 
-                // Поворот для корректного преобразования в битовую карту и модель.
-                image.RotateFlip(RotateFlipType.Rotate180FlipX);
+            // Поворот для корректного преобразования в битовую карту и модель.
+            image.RotateFlip(RotateFlipType.Rotate180FlipX);
 
-                using (var resizedBitmap = new Bitmap(image, newSize))
+            using (var resizedBitmap = new Bitmap(image, newSize))
+            {
+                for (var indexX = resizedBitmap.Width - 1; indexX >= 0; --indexX)
                 {
-                    for (var indexX = 0; indexX < resizedBitmap.Width; ++indexX)
+                    for (var indexY = 0; indexY < resizedBitmap.Height; ++indexY)
                     {
-                        for (var indexY = 0; indexY < resizedBitmap.Height; ++indexY)
+                        var currentPixel = resizedBitmap.GetPixel(indexX, indexY);
+
+                        if (currentPixel.R == 0 &&
+                            currentPixel.G == 0 &&
+                            currentPixel.B == 0)
                         {
-                            var currentPixel = resizedBitmap.GetPixel(indexX, indexY);
-
-                            var color = System.Windows.Media.Color.FromArgb(0,0,0,0);
-
-                            if (currentPixel.R == 0 &&
-                                currentPixel.G == 0 &&
-                                currentPixel.B == 0)
-                                continue;
-                            // Изображение залито в белом фоне цветом с содержанием R
-                            // равным: 255, 254, 253 и т.д.
-
-                            switch (currentPixel.R)
-                            {
-                                case 255:
-                                    color.R = 1;
-                                    break;
-
-                                case 254:
-                                    color.R = 45;
-                                    break;
-
-                                case 253:
-                                    color.R = 95;
-                                    break;
-
-                                case 252:
-                                    color.R = 150;
-                                    break;
-
-                                case 251:
-                                    color.R = 200;
-                                    break;
-
-                                case 250:
-                                    color.R = 250;
-                                    break;
-
-                                default:
-                                    break;
-                            }
-
-                            colorMap[indexX, indexY] = color;
+                            pointMap[indexX, indexY] = 1;
                         }
                     }
                 }
             }
 
-            return colorMap;
+            return pointMap;
+        }
+
+        /// <summary>
+        /// Создание модели реверсивного треугольника.
+        /// </summary>
+        /// <param name="gridMatrix">Матрица точек.</param>
+        /// <param name="meshBuilder">Инструмент создания поверхности.</param>
+        /// <param name="smoothingFactor">Фактор сглаживания.</param>
+        /// <param name="halfOfWidth">Половина ширины модели.</param>
+        /// <param name="halfOfLength">Половина длинны модели.</param>
+        /// <param name="indexX">Точка вставки по X.</param>
+        /// <param name="indexY">Точка вставки по Y.</param>
+        private static void CreateReversedTriangle(int[,] gridMatrix, MeshBuilder meshBuilder, double smoothingFactor,
+            int halfOfWidth, int halfOfLength, int indexX, int indexY)
+        {
+            var pointFour = new Point3D(indexX + 1, indexY,
+                gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength] * smoothingFactor);
+            var pointFive = new Point3D(indexX, indexY + 1,
+                gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1] * smoothingFactor);
+            var pointSix = new Point3D(indexX + 1, indexY + 1,
+                gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength + 1] * smoothingFactor);
+
+            meshBuilder.AddTriangle(pointFour, pointFive, pointSix);
+        }
+
+        /// <summary>
+        /// Создание поверхности.
+        /// </summary>
+        /// <param name="gridMatrix">Сетка точек для расположения высот.</param>
+        /// <param name="meshBuilder">Инструмент для работы с геометрией.</param>
+        /// <param name="smoothingFactor">Сглаживание для конвертацииипостроения геометрии.</param>
+        private static void CreateTerrain(int[,] gridMatrix, MeshBuilder meshBuilder, double smoothingFactor = 1)
+        {
+            var halfOfWidth = _modelWidth / 2;
+            var halfOfLength = _modelLenght / 2;
+
+            for (var indexX = -halfOfWidth; indexX <= halfOfWidth; ++indexX)
+            {
+                for (var indexY = -halfOfLength; indexY <= halfOfLength; ++indexY)
+                {
+                    meshBuilder.AddSphere(new Point3D(indexX, indexY, gridMatrix[indexX + halfOfWidth, indexY + halfOfLength] * smoothingFactor), 1, 4, 4);
+
+                    try
+                    {
+                        CreateTriangle(gridMatrix, meshBuilder, smoothingFactor, halfOfWidth, halfOfLength, indexX,
+                            indexY);
+                    }
+                    catch
+                    {
+                        // Ignore.
+                    }
+
+                    try
+                    {
+                        CreateReversedTriangle(gridMatrix, meshBuilder, smoothingFactor, halfOfWidth, halfOfLength,
+                            indexX, indexY);
+                    }
+                    catch
+                    {
+                        // Ignore.
+                    }
+                }
+            }
+
+
+            //meshBuilder.CreateNormals = true;
+
+            //foreach (var point in pointsArray)
+            //    meshBuilder.AddBox(point, 1, 1, 1);
+        }
+
+        /// <summary>
+        /// Создание модели треугольника.
+        /// </summary>
+        /// <param name="gridMatrix">Матрица точек.</param>
+        /// <param name="meshBuilder">Инструмент создания поверхности.</param>
+        /// <param name="smoothingFactor">Фактор сглаживания.</param>
+        /// <param name="halfOfWidth">Половина ширины модели.</param>
+        /// <param name="halfOfLength">Половина длинны модели.</param>
+        /// <param name="indexX">Точка вставки по X.</param>
+        /// <param name="indexY">Точка вставки по Y.</param>
+        private static void CreateTriangle(int[,] gridMatrix, MeshBuilder meshBuilder, double smoothingFactor,
+            int halfOfWidth, int halfOfLength, int indexX, int indexY)
+        {
+            var pointOne = new Point3D(indexX, indexY,
+                gridMatrix[indexX + halfOfWidth, indexY + halfOfLength] * smoothingFactor);
+            var pointTwo = new Point3D(indexX + 1, indexY,
+                gridMatrix[indexX + halfOfWidth + 1, indexY + halfOfLength] * smoothingFactor);
+            var pointThree = new Point3D(indexX, indexY + 1,
+                gridMatrix[indexX + halfOfWidth, indexY + halfOfLength + 1] * smoothingFactor);
+
+            meshBuilder.AddTriangle(pointOne, pointTwo, pointThree);
         }
 
         /// <summary>
         /// Конвертирует изображение в карту (двумерный массив) цветов.
         /// </summary>
         /// <returns>Карту цветов обработанного изображения.</returns>
-        private System.Windows.Media.Color[,] ImageToColorMap(Bitmap bitmap)
+        private Color[,] ImageToColorMap(Bitmap bitmap)
         {
-            var colorMap = new System.Windows.Media.Color[_modelWidth + 1, _modelLenght + 1];
+            var colorMap = new Color[_modelWidth + 1, _modelLenght + 1];
 
             if (bitmap.Width != _modelWidth ||
                 bitmap.Height != _modelLenght)
             {
                 var image = bitmap;
-                var newSize = new System.Drawing.Size(_modelWidth + 1, _modelLenght + 1);
+                var newSize = new Size(_modelWidth + 1, _modelLenght + 1);
 
                 // Поворот для корректного преобразования в битовую карту и модель.
                 image.RotateFlip(RotateFlipType.Rotate180FlipX);
@@ -307,8 +443,7 @@
                         {
                             var currentPixel = resizedBitmap.GetPixel(indexX, indexY);
 
-                            var color = System.Windows.Media.Color.
-                                FromArgb(currentPixel.A, currentPixel.R,
+                            var color = Color.FromArgb(currentPixel.A, currentPixel.R,
                                 currentPixel.G, currentPixel.B);
 
                             colorMap[indexX, indexY] = color;

@@ -32,11 +32,11 @@
 
                     model.Material = randomMaterial;
 
-                    randomMaterial = MaterialHelper.CreateMaterial(
-                        Color.FromRgb(
-                        (byte)random.Next(byte.MinValue, byte.MaxValue),
-                        (byte)random.Next(byte.MinValue, byte.MaxValue),
-                        (byte)random.Next(byte.MinValue, byte.MaxValue)));
+                    //randomMaterial = MaterialHelper.CreateMaterial(
+                    //    Color.FromRgb(
+                    //    (byte)random.Next(byte.MinValue, byte.MaxValue),
+                    //    (byte)random.Next(byte.MinValue, byte.MaxValue),
+                    //    (byte)random.Next(byte.MinValue, byte.MaxValue)));
 
                     model.BackMaterial = randomMaterial;
                 }

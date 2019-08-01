@@ -77,7 +77,7 @@
             <helixToolkit:DefaultLights/>
             <helixToolkit:ThreePointLights/>
 
-            <helixToolkit:RectangleVisual3D x:Name="BasePlane" Content="{Binding BasePlane}"/>
+            <!--<helixToolkit:RectangleVisual3D x:Name="BasePlane" Content="{Binding BasePlane}"/>-->
             <ModelVisual3D Content="{Binding Model}"/>
         </helixToolkit:HelixViewport3D>
     </Grid>
