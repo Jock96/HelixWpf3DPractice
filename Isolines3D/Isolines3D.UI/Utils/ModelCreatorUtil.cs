@@ -254,8 +254,6 @@
 
                     if (currentPoint == 1)
                         pointsByCoords.Add(new Point3D(indexX, indexY, 1));
-
-                    continue;
                 }
             }
 
@@ -314,21 +312,209 @@
 
                         break;
                     }
-                    else
-                    {
-                        foreach (var nextPoint in realPoints)
-                        {
-                            if (!pointsOfLine.Contains(nextPoint))
-                                pointsOfLine.Add(nextPoint);
-                        }
 
-                        firstPoint = pointsOfLine.Last();
+                    foreach (var nextPoint in realPoints)
+                    {
+                        if (!pointsOfLine.Contains(nextPoint))
+                            pointsOfLine.Add(nextPoint);
                     }
+
+                    firstPoint = pointsOfLine.Last();
                 }
             }
             while (pointsByCoords.Any());
 
+            BuildGrid(meshBuilder, halfOfWidth, halfOfLength);
+
+            var mesh = meshBuilder.ToMesh(true);
+            var material = MaterialHelper.CreateMaterial(Colors.Green);
+
+            modelGroup.Children.Add(new GeometryModel3D
+            {
+                Geometry = mesh,
+                Material = material,
+                BackMaterial = material
+            });
+
+            indexer = 0;
+            lineModels.Clear();
             return modelGroup;
+        }
+
+        /// <summary>
+        /// Построить поверхность.
+        /// </summary>
+        /// <param name="meshBuilder"></param>
+        /// <param name="halfOfWidth"></param>
+        /// <param name="halfOfLength"></param>
+        private static void BuildGrid(MeshBuilder meshBuilder, int halfOfWidth, int halfOfLength)
+        {
+            var upBorder = new List<Point3D>();
+            var rightBorder = new List<Point3D>();
+            var bottomBorder = new List<Point3D>();
+            var leftBorder = new List<Point3D>();
+
+            for (var indexX = -halfOfWidth; indexX <= halfOfWidth; ++indexX)
+                upBorder.Add(new Point3D(indexX, halfOfLength, 0));
+
+            for (var indexY = -halfOfLength; indexY <= halfOfLength; ++indexY)
+                rightBorder.Add(new Point3D(halfOfWidth, indexY, 0));
+
+            for (var indexX = -halfOfWidth; indexX <= halfOfWidth; ++indexX)
+                bottomBorder.Add(new Point3D(indexX, -halfOfLength, 0));
+
+            for (var indexY = -halfOfLength; indexY <= halfOfLength; ++indexY)
+                leftBorder.Add(new Point3D(-halfOfWidth, indexY, 0));
+
+            var borderPoints = new List<Point3D>();
+
+            borderPoints.AddRange(upBorder);
+            borderPoints.AddRange(bottomBorder);
+            borderPoints.AddRange(leftBorder);
+            borderPoints.AddRange(rightBorder);
+
+            var points = lineModels[0];
+
+            var sortedBorderPoints = new List<Point3D>();
+
+            CreateLinerTerrain(meshBuilder, borderPoints, points, ref sortedBorderPoints);
+            LinerTerrainBackpropagation(meshBuilder, sortedBorderPoints, points);
+
+            sortedBorderPoints.Clear();
+
+            for (var index = 1; index < lineModels.Count; ++index)
+            {
+                points = lineModels[index];
+
+                borderPoints = lineModels[index - 1];
+
+                if (index == 3)
+                    borderPoints.AddRange(lineModels[index - 2]);
+
+                //var sortedPoints = new List<Point3D>();
+
+                CreateLinerTerrain(meshBuilder, borderPoints, points, ref sortedBorderPoints);
+
+                points = lineModels[index];
+
+                if (index == 2)
+                {
+                    points = lineModels[3];
+                    points.AddRange(lineModels[2]);
+                }
+
+                if (index == 3)
+                {
+                    points = lineModels[2];
+                }
+
+                LinerTerrainBackpropagation(meshBuilder, sortedBorderPoints, points);
+                sortedBorderPoints.Clear();
+            }
+
+            // Строим поверхность на самих изолиниях.
+        }
+
+        private static void LinerTerrainBackpropagation(MeshBuilder meshBuilder, List<Point3D> borderPoints, List<Point3D> pointsOnLine)
+        {
+            foreach (var borderPoint in borderPoints)
+            {
+                var listOfIndicies = new List<int>();
+
+                var indexOfNearestPoint = FindIndexOfNearestPoint(pointsOnLine, borderPoint);
+                listOfIndicies.Add(indexOfNearestPoint);
+
+                var copyOfPoints = new List<Point3D>();
+                pointsOnLine.ForEach(element => copyOfPoints.Add(element));
+
+                copyOfPoints[indexOfNearestPoint] = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue);
+
+                for (var index = 0; index < 5; ++index)
+                {
+                    var indexToReplace = FindIndexOfNearestPoint(copyOfPoints, borderPoint);
+                    copyOfPoints[indexToReplace] = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue);
+
+                    listOfIndicies.Add(indexToReplace);
+                }
+
+                //meshBuilder.AddPipe(borderPoint, pointsOnLine[indexOfNearestPoint], 0, 0.5, 5);\
+
+                // TODO: Брать соседние точки по сделанному методу левую и правую.
+                // TODO: Создавать полигон из трианглов по этим точкам.
+
+                meshBuilder.AddTriangle(borderPoint, pointsOnLine[listOfIndicies[0]], pointsOnLine[listOfIndicies[1]]);
+                meshBuilder.AddTriangle(borderPoint, pointsOnLine[listOfIndicies[1]], pointsOnLine[listOfIndicies[2]]);
+                meshBuilder.AddTriangle(borderPoint, pointsOnLine[listOfIndicies[2]], pointsOnLine[listOfIndicies[3]]);
+                meshBuilder.AddTriangle(borderPoint, pointsOnLine[listOfIndicies[3]], pointsOnLine[listOfIndicies[4]]);
+                meshBuilder.AddTriangle(borderPoint, pointsOnLine[listOfIndicies[4]], pointsOnLine[listOfIndicies[5]]);
+                meshBuilder.AddTriangle(borderPoint, pointsOnLine[listOfIndicies[5]], pointsOnLine[listOfIndicies[0]]);
+            }
+        }
+
+        /// <summary>
+        /// Создать линейную поверхность.
+        /// </summary>
+        /// <param name="meshBuilder"></param>
+        /// <param name="borderPoints"></param>
+        /// <param name="pointsOnLine"></param>
+        private static void CreateLinerTerrain(MeshBuilder meshBuilder, List<Point3D> borderPoints, List<Point3D> pointsOnLine, ref List<Point3D> sortedBorderPoints)
+        {
+            sortedBorderPoints.AddRange(borderPoints);
+
+            foreach (var point in pointsOnLine)
+            {
+                var listOfIndicies = new List<int>();
+
+                var indexOfNearestPoint = FindIndexOfNearestPoint(borderPoints, point);
+                listOfIndicies.Add(indexOfNearestPoint);
+
+                var copyOfborderPoints = new List<Point3D>();
+                borderPoints.ForEach(element => copyOfborderPoints.Add(element));
+
+                copyOfborderPoints[indexOfNearestPoint] = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue);
+
+                for (var index = 0; index < 5; ++index)
+                {
+                    var indexToReplace = FindIndexOfNearestPoint(copyOfborderPoints, point);
+                    copyOfborderPoints[indexToReplace] = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue);
+
+                    listOfIndicies.Add(indexToReplace);
+                }
+
+                foreach (var index in listOfIndicies)
+                {
+                    //meshBuilder.AddPipe(point, borderPoints[index], 0, 0.25, 5);
+
+                    var element = borderPoints[index];
+                    sortedBorderPoints.Remove(element);
+                }
+
+                meshBuilder.AddTriangle(point, borderPoints[listOfIndicies[0]], borderPoints[listOfIndicies[1]]);
+                meshBuilder.AddTriangle(point, borderPoints[listOfIndicies[1]], borderPoints[listOfIndicies[2]]);
+                meshBuilder.AddTriangle(point, borderPoints[listOfIndicies[2]], borderPoints[listOfIndicies[3]]);
+                meshBuilder.AddTriangle(point, borderPoints[listOfIndicies[3]], borderPoints[listOfIndicies[4]]);
+                meshBuilder.AddTriangle(point, borderPoints[listOfIndicies[4]], borderPoints[listOfIndicies[5]]);
+                meshBuilder.AddTriangle(point, borderPoints[listOfIndicies[5]], borderPoints[listOfIndicies[0]]);
+            }
+        }
+
+        private static int FindIndexOfNearestPoint(List<Point3D> borderPoints, Point3D point)
+        {
+            var minDistance = (double)int.MaxValue;
+            var indexOfNearestPoint = 0;
+
+            foreach (var borderPoint in borderPoints)
+            {
+                var currentDistance = point.DistanceTo(borderPoint);
+
+                if (currentDistance < minDistance)
+                {
+                    minDistance = currentDistance;
+                    indexOfNearestPoint = borderPoints.IndexOf(borderPoint);
+                }
+            }
+
+            return indexOfNearestPoint;
         }
 
         /// <summary>
@@ -388,8 +574,33 @@
                     Material = material,
                     BackMaterial = material
                 });
+
+                lineModels.Add(indexer, intersect);
+
+                var copyOfIntersect = new List<Point3D>();
+
+                intersect.ForEach(element => copyOfIntersect.Add(element));
+
+                foreach (var point in copyOfIntersect)
+                {
+                    var indexOfPoint = intersect.IndexOf(point);
+
+                    intersect[indexOfPoint] = new Point3D(point.X, point.Y, zCoordinate);
+                }
+
+                indexer += 1;
             }
         }
+
+        /// <summary>
+        /// Список линий на сцене.
+        /// </summary>
+        private static Dictionary<int, List<Point3D>> lineModels = new Dictionary<int, List<Point3D>>();
+
+        /// <summary>
+        /// Индекс входных линий.
+        /// </summary>
+        private static int indexer = 0;
 
         /// <summary>
         /// Формирование карты по изолиниям.

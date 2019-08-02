@@ -20,24 +20,30 @@
             var random = new Random();
             var mainModel = mainWindowVM.Model;
 
+            var randomMaterial = MaterialHelper.CreateMaterial(
+                Color.FromRgb(
+                    (byte)random.Next(byte.MinValue, byte.MaxValue),
+                    (byte)random.Next(byte.MinValue, byte.MaxValue),
+                    (byte)random.Next(byte.MinValue, byte.MaxValue)));
+
+            var planeModel = mainWindowVM.BasePlane;
+            planeModel.Material = randomMaterial;
+            planeModel.BackMaterial = randomMaterial;
+
+            //foreach (var child in (planeModel as Model3DGroup).Children)
+            //{
+            //    if (child is GeometryModel3D model)
+            //    {
+            //        model.Material = randomMaterial;
+            //        model.BackMaterial = randomMaterial;
+            //    }
+            //}
+
             foreach (var child in (mainModel as Model3DGroup).Children)
             {
                 if (child is GeometryModel3D model)
                 {
-                    var randomMaterial = MaterialHelper.CreateMaterial(
-                        Color.FromRgb(
-                        (byte)random.Next(byte.MinValue, byte.MaxValue),
-                        (byte)random.Next(byte.MinValue, byte.MaxValue),
-                        (byte)random.Next(byte.MinValue, byte.MaxValue)));
-
                     model.Material = randomMaterial;
-
-                    //randomMaterial = MaterialHelper.CreateMaterial(
-                    //    Color.FromRgb(
-                    //    (byte)random.Next(byte.MinValue, byte.MaxValue),
-                    //    (byte)random.Next(byte.MinValue, byte.MaxValue),
-                    //    (byte)random.Next(byte.MinValue, byte.MaxValue)));
-
                     model.BackMaterial = randomMaterial;
                 }
             }
