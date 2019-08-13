@@ -1,0 +1,8 @@
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\TriangulationDelone\bin\Debug\TriangulationDelone.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\TriangulationDelone\bin\Debug\TriangulationDelone.pdb
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\TriangulationDelone\bin\Debug\HelixToolkit.Wpf.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\TriangulationDelone\bin\Debug\HelixToolkit.Wpf.xml
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\TriangulationDelone\obj\Debug\TriangulationDelone.csprojResolveAssemblyReference.cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\TriangulationDelone\obj\Debug\TriangulationDelone.csproj.CoreCompileInputs.cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\TriangulationDelone\obj\Debug\TriangulationDelone.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\TriangulationDelone\obj\Debug\TriangulationDelone.pdb

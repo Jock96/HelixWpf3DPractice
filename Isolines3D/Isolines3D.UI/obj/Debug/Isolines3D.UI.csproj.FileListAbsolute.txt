@@ -56,3 +56,5 @@ D:\ИПР\HelixWpf3DPractice\Isolines3D\Isolines3D.UI\obj\Debug\Isolines3D.UI.cs
 D:\ИПР\HelixWpf3DPractice\Isolines3D\Isolines3D.UI\obj\Debug\Isolines3D.UI.csproj.CopyComplete
 D:\ИПР\HelixWpf3DPractice\Isolines3D\Isolines3D.UI\obj\Debug\Isolines3D.UI.exe
 D:\ИПР\HelixWpf3DPractice\Isolines3D\Isolines3D.UI\obj\Debug\Isolines3D.UI.pdb
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\Isolines3D.UI\bin\Debug\TriangulationDelone.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\Isolines3D.UI\bin\Debug\TriangulationDelone.pdb

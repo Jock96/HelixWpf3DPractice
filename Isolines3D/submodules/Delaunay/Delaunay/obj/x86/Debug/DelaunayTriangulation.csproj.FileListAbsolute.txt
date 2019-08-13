@@ -1,0 +1,12 @@
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\bin\Debug\Delaunay.exe.config
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\bin\Debug\Delaunay.exe
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\bin\Debug\Delaunay.pdb
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\bin\Debug\HelixToolkit.Wpf.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\bin\Debug\HelixToolkit.Wpf.xml
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\obj\x86\Debug\DelaunayTriangulation.csprojResolveAssemblyReference.cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\obj\x86\Debug\gg.Mesh.Form1.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\obj\x86\Debug\Delaunay.Properties.Resources.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\obj\x86\Debug\DelaunayTriangulation.csproj.GenerateResource.Cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\obj\x86\Debug\DelaunayTriangulation.csproj.CoreCompileInputs.cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\obj\x86\Debug\Delaunay.exe
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Delaunay\Delaunay\obj\x86\Debug\Delaunay.pdb

@@ -164,8 +164,8 @@
         /// </summary>
         private RectangleVisual3D _basePlane = new RectangleVisual3D
         {
-            Material = MaterialHelper.CreateMaterial(Colors.Green),
-            Fill = BrushHelper.CreateGradientBrush(Colors.Green),
+            Material = MaterialHelper.CreateMaterial(Colors.Gray),
+            Fill = BrushHelper.CreateGradientBrush(Colors.Gray),
             Length = _basePlaneLength,
             Width = _basePlaneWidth
         };

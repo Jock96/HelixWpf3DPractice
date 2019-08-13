@@ -1,0 +1,6 @@
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\Triangle\bin\Debug\Triangle.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\Triangle\bin\Debug\Triangle.pdb
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\Triangle\obj\Debug\Triangle.csprojResolveAssemblyReference.cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\Triangle\obj\Debug\Triangle.csproj.CoreCompileInputs.cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\Triangle\obj\Debug\Triangle.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\Triangle\obj\Debug\Triangle.pdb

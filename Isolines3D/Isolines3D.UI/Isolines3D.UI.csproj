@@ -120,5 +120,11 @@
   <ItemGroup>
     <None Include="Resources\VerteciesMap.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TriangulationDelone\TriangulationDelone.csproj">
+      <Project>{0401fb35-1718-4f24-91df-e5260ac85778}</Project>
+      <Name>TriangulationDelone</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

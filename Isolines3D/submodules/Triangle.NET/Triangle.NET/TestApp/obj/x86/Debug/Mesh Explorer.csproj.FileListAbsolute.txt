@@ -1,0 +1,20 @@
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\bin\Debug\Mesh Explorer.exe
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\bin\Debug\Mesh Explorer.pdb
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\bin\Debug\Triangle.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\bin\Debug\Triangle.Rendering.dll
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\bin\Debug\Triangle.Rendering.pdb
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\bin\Debug\Triangle.pdb
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\Mesh Explorer.csprojResolveAssemblyReference.cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.FormExport.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.FormGenerator.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.FormLog.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.FormMain.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.FormTopology.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.Topology.TopologyControlView.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.Views.AboutView.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.Views.MeshControlView.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\MeshExplorer.Views.StatisticView.resources
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\Mesh Explorer.csproj.GenerateResource.Cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\Mesh Explorer.csproj.CoreCompileInputs.cache
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\Mesh Explorer.exe
+C:\Лабы\Работа\HelixWpf3DPractice\Isolines3D\submodules\Triangle.NET\Triangle.NET\TestApp\obj\x86\Debug\Mesh Explorer.pdb
