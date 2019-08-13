@@ -2,6 +2,7 @@
 {
     using HelixToolkit.Wpf;
     using System.Collections.Generic;
+    using System.Drawing;
     using System.Windows.Media.Media3D;
 
     /// <summary>
@@ -98,12 +99,33 @@
         /// </summary>
         /// <param name="set"></param>
         /// <param name="bounds"></param>
-        public void Compute(List<Vertex> set, System.Drawing.RectangleF bounds)
+        public void Compute(List<Vertex> set, RectangleF bounds)
         {
             Setup(bounds);
             for (int i = 0; i < set.Count; i++)
             {
                 Append(set[i]);
+            }
+        }
+
+        /// <summary>
+        /// Перегрзука вычисления триангуляции без использования System.Drawing.
+        /// </summary>
+        /// <param name="vertecies">Вершины.</param>
+        /// <param name="startPoint">Начальная точка рамки расчёта.</param>
+        /// <param name="width">Ширина рамки.</param>
+        /// <param name="length">Длина рамки.</param>
+        public void Compute(List<Vertex> vertecies, Point3D startPoint, int width, int length)
+        {
+            var firstPoint = new PointF((float)startPoint.X, (float)startPoint.Y);
+            var size = new SizeF(width, -length);
+
+            var bounds = new RectangleF(firstPoint, size);
+
+            Setup(bounds);
+            for (int i = 0; i < vertecies.Count; i++)
+            {
+                Append(vertecies[i]);
             }
         }
 
@@ -127,7 +149,7 @@
         /// Setup.
         /// </summary>
         /// <param name="bounds"></param>
-        public void Setup(System.Drawing.RectangleF bounds)
+        public void Setup(RectangleF bounds)
         {
             Triangle.ResetIndex();
             Facets.Clear();
@@ -153,57 +175,9 @@
         }
 
         /// <summary>
-        /// Draw the mesh.
+        /// Прорисовка треугольников.
         /// </summary>
-        /// <param name="g"></param>
-        /// <param name="minx"></param>
-        /// <param name="miny"></param>
-        /// <param name="maxx"></param>
-        /// <param name="maxy"></param>
-        public void Draw(System.Drawing.Graphics g, int minx, int miny, int maxx, int maxy)
-        {
-            System.Drawing.Pen[] pens = { 
-                System.Drawing.Pens.Red, 
-                System.Drawing.Pens.Green,
-                System.Drawing.Pens.Blue, 
-                System.Drawing.Pens.Orange,
-                System.Drawing.Pens.Purple, 
-                System.Drawing.Pens.Brown,
-                System.Drawing.Pens.Violet, 
-                System.Drawing.Pens.Lime,
-                System.Drawing.Pens.DarkBlue, 
-                System.Drawing.Pens.Magenta,
-                System.Drawing.Pens.Cyan, 
-                System.Drawing.Pens.DarkRed};
-
-            maxx -= 2;
-            maxy -= 2;
-            for (int i = 0; i < Facets.Count; i++)
-            {
-                float x = Facets[i].OpositeOfEdge(0).X;
-                float y = Facets[i].OpositeOfEdge(0).Y;
-                int k = i % pens.Length;
-                for (int j = 1; j < 4; j++)
-                {
-                    x = x < minx ? minx : x;
-                    y = y < miny ? miny : y;
-                    x = x > maxx ? maxx : x;
-                    y = y > maxy ? maxy : y;
-
-                    float nx = Facets[i].OpositeOfEdge(j).X;
-                    float ny = Facets[i].OpositeOfEdge(j).Y;
-                    nx = nx < minx ? minx : nx;
-                    ny = ny < miny ? miny : ny;
-                    nx = nx > maxx ? maxx : nx;
-                    ny = ny > maxy ? maxy : ny;
-                    g.DrawLine(pens[k], x, y, nx, ny);
-                    x = nx;
-                    y = ny;
-                }
-            }
-
-        }
-
+        /// <param name="meshBuilder">Инструмент создания поверхности HelixToolkit.</param>
         public void Draw(MeshBuilder meshBuilder)
         {
             foreach (var facet in Facets)

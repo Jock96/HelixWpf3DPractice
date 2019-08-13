@@ -2,7 +2,6 @@
 {
     using HelixToolkit.Wpf;
     using System.Collections.Generic;
-    using System.Drawing;
     using System.Linq;
     using System.Windows.Media;
     using System.Windows.Media.Media3D;
@@ -231,13 +230,11 @@
 
             var listOfVertex = new List<Vertex>();
 
-            foreach (var point in points)
-            {
-                listOfVertex.Add(new Vertex((float)point.X, (float)point.Y, (float)point.Z));
-            }
+            points.ForEach(point => listOfVertex.Add(new Vertex((float)point.X, (float)point.Y, (float)point.Z)));
 
             var mesh = new Mesh();
-            mesh.Compute(listOfVertex, new RectangleF(new PointF((float)upBorder.First().X, (float)upBorder.First().Y), new SizeF(halfOfWidth * 2, -halfOfLength * 2)));
+
+            mesh.Compute(listOfVertex, upBorder.First(), halfOfWidth * 2, halfOfLength * 2);
             mesh.Draw(meshBuilder);
         }
 

@@ -68,6 +68,7 @@
     <Compile Include="Commands\ShowLightsDirectionCommand.cs" />
     <Compile Include="Constants\PathConstants.cs" />
     <Compile Include="Extensions\BitmapExtensions.cs" />
+    <Compile Include="Helpers\ModelCreatorHelper.cs" />
     <Compile Include="Helpers\PathHelper.cs" />
     <Compile Include="Utils\ModelCreatorUtil.cs" />
     <Compile Include="ViewModels\BaseVM.cs" />
@@ -125,6 +126,11 @@
       <Project>{0401fb35-1718-4f24-91df-e5260ac85778}</Project>
       <Name>TriangulationDelone</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Example4.bmp" />
+    <Resource Include="Resources\Example5.bmp" />
+    <Resource Include="Resources\Isoline3.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

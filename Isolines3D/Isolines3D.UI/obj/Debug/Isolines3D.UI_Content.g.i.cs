@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/mapofverticies.bmp")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/example4.bmp")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/example5.bmp")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/isoline3.bmp")]
 
 
